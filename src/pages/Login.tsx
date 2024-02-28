@@ -1,10 +1,11 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Navigate, useNavigate } from "react-router-dom";
 import HeroImage from "../assets/auth-login-illustration-light.png";
 import { useState } from "react";
 import { axiosInstance } from "../utils/axiosInstance";
 import { AxiosError } from "axios";
 
 const Login = () => {
+  const token = localStorage.getItem("accessToken");
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +28,7 @@ const Login = () => {
         if (res.status === 200) {
           console.log(res.data);
           localStorage.setItem("accessToken", res.data.accessToken);
-          navigate("/");
+          navigate("/", { replace: true });
         }
       } catch (error) {
         if (error instanceof AxiosError) {
@@ -37,6 +38,11 @@ const Login = () => {
       }
     }
   };
+
+  /** ---> if user logged then */
+  if (token) {
+    return <Navigate to={"/"} />;
+  }
 
   return (
     <div className="w-full h-screen flex flex-col md:flex-row  gap-10  p-5 md:p-10 md:px-20">

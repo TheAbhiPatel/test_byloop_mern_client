@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Navigate } from "react-router-dom";
 import HeroImage from "../assets/auth-login-illustration-light.png";
 import { useState } from "react";
 import { axiosInstance } from "../utils/axiosInstance";
@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 
 const Signup = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("accessToken");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,6 +41,11 @@ const Signup = () => {
       }
     }
   };
+
+  /** ---> if user logged then */
+  if (token) {
+    return <Navigate to={"/"} />;
+  }
 
   return (
     <div className="w-full h-screen flex flex-col md:flex-row  gap-10  p-5 md:p-10 md:px-20">
