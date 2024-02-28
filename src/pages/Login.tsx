@@ -1,20 +1,40 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import HeroImage from "../assets/auth-login-illustration-light.png";
 import { useState } from "react";
+import { axiosInstance } from "../utils/axiosInstance";
+import { AxiosError } from "axios";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [apiErrorMsg, setApiErrorMsg] = useState("");
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    setApiErrorMsg("");
     if (!email || !password) {
       setErrorMsg("All field required.");
     } else {
       setErrorMsg("");
-      console.log("--------->", password, email);
+      try {
+        const res = await axiosInstance.post("auth/login", {
+          email,
+          password,
+        });
+
+        if (res.status === 200) {
+          console.log(res.data);
+          localStorage.setItem("accessToken", res.data.accessToken);
+          navigate("/");
+        }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          setApiErrorMsg(error.response?.data.message);
+        }
+        console.log("axios error ---->", error);
+      }
     }
   };
 
@@ -68,6 +88,9 @@ const Login = () => {
             />
           </div>
           {errorMsg && <p className="text-xs text-red-500">* {errorMsg}</p>}
+          {apiErrorMsg && (
+            <p className="text-xs text-red-500">* {apiErrorMsg}</p>
+          )}
           <button className="bg-indigo-500 text-sm  text-white p-1 rounded-md">
             Sign in
           </button>

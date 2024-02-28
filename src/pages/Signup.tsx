@@ -1,23 +1,43 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import HeroImage from "../assets/auth-login-illustration-light.png";
 import { useState } from "react";
+import { axiosInstance } from "../utils/axiosInstance";
+import { AxiosError } from "axios";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [cpassword, setCPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [apiErrorMsg, setApiErrorMsg] = useState("");
 
-  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!email || !password || !cpassword) {
+    setApiErrorMsg("");
+    if (!name || !email || !password || !cpassword) {
       setErrorMsg("All field required.");
     } else if (password !== cpassword) {
       setErrorMsg("Confirm password should match.");
     } else {
       setErrorMsg("");
-      console.log("--------->", password, cpassword, email);
+      try {
+        const res = await axiosInstance.post("auth/signup", {
+          name,
+          email,
+          password,
+        });
+
+        if (res.status === 201) {
+          navigate("/login");
+        }
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          setApiErrorMsg(error.response?.data.message);
+        }
+        console.log("axios error ---->", error);
+      }
     }
   };
 
@@ -42,6 +62,20 @@ const Signup = () => {
           onSubmit={handleSignup}
           className="flex flex-col gap-3 mt-5 text-xs"
         >
+          <div className="flex flex-col">
+            <label htmlFor="name" className="text-gray-600 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your Full Name"
+              className="border border-gray-300 rounded-md focus:border-indigo-500 p-1 px-3 outline-none"
+            />
+          </div>
           <div className="flex flex-col">
             <label htmlFor="email" className="text-gray-600 mb-1">
               Email or Username
@@ -85,6 +119,9 @@ const Signup = () => {
             />
           </div>
           {errorMsg && <p className="text-xs text-red-500">* {errorMsg}</p>}
+          {apiErrorMsg && (
+            <p className="text-xs text-red-500">* {apiErrorMsg}</p>
+          )}
 
           <button className="bg-indigo-500 text-sm  text-white p-1 rounded-md">
             Sign up
